@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+    <bean id="ssm" class="com.aws.cmr.sample2.AmazonSystemsManagerParameterStorePropertyPlaceholderConfigurer">
+        <property name="env" value="${env}" />
+    </bean>
+
+    <bean id="amqUserName" factory-bean="ssm" factory-method="lookup">
+        <constructor-arg value="SERVICE-A/AMAZONMQ/USERNAME" />
+    </bean>
+
+    <bean id="amazonMQ" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <!-- my favorite way to lookup parameters from Amazon SystemsManager Parameter Store
+                     but required the most engineering effort -->
+                <!-- <property name="brokerURL" value="$[amazonMQ.brokerURL]" /> -->
+
+                <property name="brokerURL">
+                    <bean factory-bean="ssm" factory-method="lookup">
+                        <constructor-arg value="SERVICE-A/AMAZONMQ/BROKERURL" />
+                    </bean>
+                </property>
+
+                <!-- my second favorite way to lookup parameters from Amazon SystemsManager Parameter Store
+                     inner factory-bean lookup -->
+                <property name="password">
+                    <bean factory-bean="ssm" factory-method="lookup">
+                        <constructor-arg value="SERVICE-A/AMAZONMQ/PASSWORD" />
+                    </bean>
+                </property>
+
+                <!-- probably the most common way to lookup the properties -->
+                <property name="userName" ref="amqUserName" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="websphereMQ" class="org.apache.camel.component.jms.JmsComponent">
+        <property name="connectionFactory">
+            <bean class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter">
+                <property name="targetConnectionFactory">
+                    <bean class="com.ibm.mq.jms.MQQueueConnectionFactory">
+                        <property name="hostName" value="${websphereMQ.hostName}" />
+                        <property name="port" value="1414" />
+                        <property name="queueManager" value="${websphereMQ.queueManager}" />
+                        <property name="channel" value="${websphereMQ.channel}" />
+                        <property name="transportType" value="1" />
+                    </bean>
+                </property>
+                <property name="username" value="${websphereMQ.userName}" />
+                <property name="password" value="${websphereMQ.password}" />
+            </bean>
+        </property>
+    </bean>
+
+    <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
+        <route id="amazonMQ-to-websphereMQ">
+            <description>Camel Route from amazonMQ to websphereMQ</description>
+            <from uri="amazonMQ:queue.A"/>
+            <to uri="websphereMQ:queue.B"/>
+        </route>
+
+        <route id="websphereMQ-to-amazonMQ">
+            <description>Camel Route from websphereMQ to amazonMQ</description>
+            <from uri="websphereMQ:queue.C"/>
+            <to uri="amazonMQ:queue.D"/>
+        </route>
+    </camelContext>
+</beans>
