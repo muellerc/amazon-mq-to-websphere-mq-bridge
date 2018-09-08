@@ -38,7 +38,7 @@
     <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
-            <from uri="amazonMQ:NativeSourceQ"/>
+            <from uri="amazonMQ:NativeSourceQ?concurrentConsumers=10"/>
 			<setExchangePattern pattern="InOnly"/>
 		    <!-- remove inner message headers and properties to test without inbound side effects! -->
 		    <removeHeaders pattern="*"/> 
