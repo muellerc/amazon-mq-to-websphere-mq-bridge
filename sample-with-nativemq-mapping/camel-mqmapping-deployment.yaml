@@ -5,6 +5,7 @@ metadata:
   labels:
     app: camelbridge
     sample: mqmapping
+    version: demo
 spec:
   replicas: 2
   selector:
@@ -16,8 +17,8 @@ spec:
         app: camelbridge
     spec:
       containers:
-      - name: camel-mq-bridge-mqmapping
-        image: mithun008/camel-mq-bridge-mqmapping:mqbridge
+      - name: sample-with-native-mq-mapping
+        image: mithun008/sample-with-native-mq-mapping:latest
         ports:
         - containerPort: 8080
           protocol: TCP
