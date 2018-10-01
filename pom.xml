@@ -30,5 +30,6 @@
     <modules>
         <module>sample-with-env-variables</module>
         <module>sample-with-aws-ssm</module>
+        <module>sample-with-nativemq-mapping</module>
     </modules>
 </project>
