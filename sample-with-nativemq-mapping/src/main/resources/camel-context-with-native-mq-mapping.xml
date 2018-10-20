@@ -34,8 +34,19 @@
             </bean>
         </property>
     </bean>
+    
+	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+	    <property name="location" value="classpath:destination.properties"/>
+	</bean>
+
 
     <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
+	 	<endpoint id="ibmNativeQ" uri="wmq:queue:${websphereMQ.nativeQ}"/>
+		<!-- 
+    	<propertyPlaceholder
+    	 	id="properties"
+      		location="destination.properties"/> -->
+  
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
             <from uri="amazonMQ:NativeSourceQ?concurrentConsumers=10"/>
@@ -44,23 +55,27 @@
 		    <removeHeaders pattern="*"/> 
 		    <removeProperties pattern="*" />
    			<!-- camel:process ref="reference to your MQ message preparation bean fits here" / -->
-   			      
+			<setHeader headerName="MyNativeQ"> <simple>{{websphereNativeQ}}</simple> </setHeader>
+   			
+			<log message="The native queue ${in.header.MyNativeQ}" loggingLevel="DEBUG"/>
 		    <setHeader headerName="JMS_IBM_Report_COD"><simple resultType="java.lang.Integer">2048</simple></setHeader>
 		    <setHeader headerName="JMS_IBM_Report_Pass_Correl_ID"><simple resultType="java.lang.Integer">64</simple></setHeader>
 		    <setHeader headerName="JMS_IBM_MsgType"><simple resultType="java.lang.Integer">8</simple></setHeader>
  			<!-- <setHeader headerName="JMSReplyTo"><constant>websphereMQ:queue:QUEUE.C</constant></setHeader>-->
-    		<setHeader headerName="CamelJmsDestinationName"><constant>queue://QM.TEST/QM.NATIVETESTQ?targetClient=1</constant></setHeader>   			        
-            <to uri="websphereMQ:queue:PLACEHOLDER.Q.NAME?concurrentConsumers=1&amp;exchangePattern=InOnly&amp;preserveMessageQos=true&amp;includeSentJMSMessageID=true&amp;ReplyTo=QM.TESTQ"/>
+    		<setHeader headerName="CamelJmsDestinationName"><constant>queue://QMGR/{{websphereNativeQ}}?targetClient=1</constant></setHeader>   			        
+            <to uri="websphereMQ:queue:PLACEHOLDER.Q.NAME?concurrentConsumers=1&amp;exchangePattern=InOnly&amp;preserveMessageQos=true&amp;includeSentJMSMessageID=true&amp;ReplyTo=DEV.QUEUE.3"/>
             
         </route>
-		
+        
+		<!-- 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
           
             <from uri="websphereMQ:queue:QM.NATIVETESTQ?concurrentConsumers=10&amp;disableReplyTo=true"/> 
             <log message="The application id : $simple{in.header.JMSXAppID}" loggingLevel="DEBUG"/>
             <to uri="amazonMQ:queue.NativeMQTestQ"/>
-        </route>
+        </route> 
+        -->
         
     </camelContext>
 </beans>

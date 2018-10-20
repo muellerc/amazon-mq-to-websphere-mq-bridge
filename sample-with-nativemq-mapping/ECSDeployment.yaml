@@ -33,6 +33,61 @@ Parameters:
     Description: A path on the public load balancer that this service
                  should be connected to. Use * to send all load balancer
                  traffic to this service.
+  AmazonMQPassword:
+    Type: String
+    NoEcho: true
+    Description: Amazon MQ account password
+    Type: String
+
+  AmazonMQBrokerURL:
+    Type: String
+    Default: ssl://b-8a62931e-e088-4820-b42b-08187974e01f-1.mq.us-west-2.amazonaws.com:61617
+    Description: Amazon MQ broker URL
+    Type: String
+
+  AmazonMQUser:
+    Type: String
+    Default: admin
+    Description: Amazon MQ user
+    Type: String
+
+  IBMMQPassword:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: IBM MQ account password
+    Type: String
+
+  IBMMQHost:
+    Type: String
+    Default: 34.213.64.86
+    Description: IBM MQ Host
+    Type: String
+
+  IBMMQPort:
+    Type: String
+    Default: 1414
+    Description: IBM MQ port
+    Type: String
+
+  IBMMQUser:
+    Type: String
+    Default: mithumal
+    Description: The IBM MQ user
+    Type: String
+
+  IBMMQQueueManager:
+    Type: String
+    Default: QM.TEST
+    Description: The IBM MQ queue manager
+    Type: String
+
+  IBMMQChannel:
+    Type: String
+    Default: SYSTEM.DEF.SVRCONN
+    Description: The IBM MQ server channel
+    Type: String
+
   Priority:
     Type: Number
     Default: 1
@@ -122,21 +177,23 @@ Resources:
             - ContainerPort: !Ref 'ContainerPort'
           Environment:
           - Name: 'amazonMQ.userName'
-            Value: 'admin'
+            Value: !Ref 'AmazonMQUser'
           - Name: 'amazonMQ.password'
-            Value: 'admin1234567'
+            Value: !Ref 'AmazonMQPassword'
           - Name: 'amazonMQ.brokerURL'
-            Value: 'ssl://b-8a62931e-e088-4820-b42b-08187974e01f-1.mq.us-west-2.amazonaws.com:61617'
+            Value: !Ref 'AmazonMQBrokerURL'
           - Name: 'websphereMQ.userName'
-            Value: 'mithumal'
+            Value: !Ref 'IBMMQUser'
           - Name: 'websphereMQ.password'
-            Value: ''
+            Value: !Ref 'IBMMQPassword'
           - Name: 'websphereMQ.hostName'
-            Value: '34.213.64.86'
+            Value: !Ref 'IBMMQHost'
           - Name: 'websphereMQ.queueManager'
-            Value: 'QM.TEST'
+            Value: !Ref IBMMQQueueManager
           - Name: 'websphereMQ.channel'
-            Value: 'SYSTEM.DEF.SVRCONN'
+            Value: !Ref IBMMQChannel
+          - Name: 'websphereMQ.channel'
+            Value: !Ref IBMMQChannel
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
   # as monitor the number of running tasks and replace any that have crashed
@@ -169,4 +226,4 @@ Outputs:
     Value: !Ref 'ECSCluster'
     Export:
       Name: !Join [ ':', [ !Ref 'AWS::StackName', 'ClusterName' ] ]
-      
+
