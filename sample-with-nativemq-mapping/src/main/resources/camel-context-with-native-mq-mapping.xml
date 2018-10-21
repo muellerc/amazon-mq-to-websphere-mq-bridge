@@ -41,11 +41,8 @@
 
 
     <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
-	 	<endpoint id="ibmNativeQ" uri="wmq:queue:${websphereMQ.nativeQ}"/>
-		<!-- 
-    	<propertyPlaceholder
-    	 	id="properties"
-      		location="destination.properties"/> -->
+	 	
+
   
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
@@ -62,8 +59,8 @@
 		    <setHeader headerName="JMS_IBM_Report_Pass_Correl_ID"><simple resultType="java.lang.Integer">64</simple></setHeader>
 		    <setHeader headerName="JMS_IBM_MsgType"><simple resultType="java.lang.Integer">8</simple></setHeader>
  			<!-- <setHeader headerName="JMSReplyTo"><constant>websphereMQ:queue:QUEUE.C</constant></setHeader>-->
-    		<setHeader headerName="CamelJmsDestinationName"><constant>queue://QMGR/{{websphereNativeQ}}?targetClient=1</constant></setHeader>   			        
-            <to uri="websphereMQ:queue:PLACEHOLDER.Q.NAME?concurrentConsumers=1&amp;exchangePattern=InOnly&amp;preserveMessageQos=true&amp;includeSentJMSMessageID=true&amp;ReplyTo=DEV.QUEUE.3"/>
+    		<setHeader headerName="CamelJmsDestinationName"><constant>queue://{{websphereNativeQMgr}}/{{websphereNativeQ}}?targetClient=1</constant></setHeader>   			        
+            <to uri="websphereMQ:queue:PLACEHOLDER.Q.NAME?concurrentConsumers=1&amp;exchangePattern=InOnly&amp;preserveMessageQos=true&amp;includeSentJMSMessageID=true&amp;ReplyTo={{websphereReplyToQ}}"/>
             
         </route>
         
