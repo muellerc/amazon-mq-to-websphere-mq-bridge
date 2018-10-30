@@ -12,7 +12,8 @@ run
 
 # Upload the Docker container to Amazon ECR 
 run  
-`$(aws ecr get-login --no-include-email --region eu-central-1)`  
+`$(aws ecr get-login --no-include-email --region <region>)`  
+`aws ecr create-repository --repository-name sample-with-aws-ssm`
 `docker push <account-id>.dkr.ecr.<region>.amazonaws.com/sample-with-aws-ssm:latest`  
 
 # Set the env variables we have to pass to Docker, if you run it locally
