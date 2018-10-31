@@ -7,13 +7,14 @@
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
-    <bean id="ssm" class="com.aws.cmr.sample2.AmazonSystemsManagerParameterStorePropertyPlaceholderConfigurer">
+    <bean id="ssm" class="com.amazonaws.samples.AmazonSystemsManagerParameterStorePropertyPlaceholderConfigurer">
         <property name="env" value="${env}" />
     </bean>
-
+	<!-- 
     <bean id="amqUserName" factory-bean="ssm" factory-method="lookup">
         <constructor-arg value="SERVICE-A/AMAZONMQ/USERNAME" />
     </bean>
+    -->
 
     <bean id="amazonMQ" class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="connectionFactory">
@@ -35,9 +36,13 @@
                         <constructor-arg value="SERVICE-A/AMAZONMQ/PASSWORD" />
                     </bean>
                 </property>
-
+                <property name="userName">
+                    <bean factory-bean="ssm" factory-method="lookup">
+                        <constructor-arg value="SERVICE-A/AMAZONMQ/USERNAME" />
+                    </bean>
+                </property>
                 <!-- probably the most common way to lookup the properties -->
-                <property name="userName" ref="amqUserName" />
+                <!-- <property name="userName" ref="amqUserName" /> -->
             </bean>
         </property>
     </bean>
@@ -64,12 +69,12 @@
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
             <from uri="amazonMQ:queue.A"/>
-            <to uri="websphereMQ:queue.B"/>
+            <to uri="websphereMQ:DEV.QUEUE.3"/>
         </route>
 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
-            <from uri="websphereMQ:queue.C"/>
+            <from uri="websphereMQ:DEV.QUEUE.2"/>
             <to uri="amazonMQ:queue.D"/>
         </route>
     </camelContext>
