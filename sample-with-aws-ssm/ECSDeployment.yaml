@@ -296,3 +296,4 @@ Outputs:
     Value: !Ref 'ECSCluster'
     Export:
       Name: !Join [ ':', [ !Ref 'AWS::StackName', 'ClusterName' ] ]
+      
