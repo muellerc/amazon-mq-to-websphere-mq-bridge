@@ -62,7 +62,7 @@ Parameters:
 
   IBMMQHost:
     Type: String
-    Default: 34.213.64.86
+    Default: 34.220.76.63
     Description: IBM MQ Host
     Type: String
 
@@ -74,19 +74,19 @@ Parameters:
 
   IBMMQUser:
     Type: String
-    Default: mithumal
+    Default: admin
     Description: The IBM MQ user
     Type: String
 
   IBMMQQueueManager:
     Type: String
-    Default: QM.TEST
+    Default: QMGR
     Description: The IBM MQ queue manager
     Type: String
 
   IBMMQChannel:
     Type: String
-    Default: SYSTEM.DEF.SVRCONN
+    Default: DEV.ADMIN.SVRCONN
     Description: The IBM MQ server channel
     Type: String
 
@@ -125,10 +125,53 @@ Resources:
           - Sid: ''
             Effect: Allow
             Principal:
-              Service: ecs.amazonaws.com
+              Service:
+              - ecs.amazonaws.com
+              - ecs-tasks.amazonaws.com
             Action: 'sts:AssumeRole'
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              # Rules which allow ECS to attach network interfaces to instances
+              # on your behalf in order for awsvpc networking mode to work right
+              - 'ec2:AttachNetworkInterface'
+              - 'ec2:CreateNetworkInterface'
+              - 'ec2:CreateNetworkInterfacePermission'
+              - 'ec2:DeleteNetworkInterface'
+              - 'ec2:DeleteNetworkInterfacePermission'
+              - 'ec2:Describe*'
+              - 'ec2:DetachNetworkInterface'
+
+              # Rules which allow ECS to update load balancers on your behalf
+              # with the information sabout how to send traffic to your containers
+              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+
+              # Rules which allow ECS to run tasks that have IAM roles assigned to them.
+              - 'iam:PassRole'
+
+              # Rules that let ECS interact with container images.
+              - 'ecr:GetAuthorizationToken'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+
+              # Rules that let ECS create and push logs to CloudWatch.
+              - 'logs:DescribeLogStreams'
+              - 'logs:CreateLogStream'
+              - 'logs:CreateLogGroup'
+              - 'logs:PutLogEvents'
+
+            Resource: '*'
+
+
 
   # This is a role which is used by the ECS tasks themselves.
   ECSTaskExecutionRole:
@@ -154,7 +197,10 @@ Resources:
                 - 'ecr:BatchGetImage'
 
                 # Allow the ECS tasks to upload logs to CloudWatch, MQ and SSM
+                # Rules that let ECS create and push logs to CloudWatch.
+                - 'logs:DescribeLogStreams'
                 - 'logs:CreateLogStream'
+                - 'logs:CreateLogGroup'
                 - 'logs:PutLogEvents'
                 - 'mq:*'
                 - 'ssm:*'
@@ -176,8 +222,9 @@ Resources:
       RequiresCompatibilities:
         - FARGATE
       ExecutionRoleArn:
+          !Ref 'ECSRole'
+      TaskRoleArn:
           !Ref 'ECSTaskExecutionRole'
-
       ContainerDefinitions:
         - Name: !Ref 'ServiceName'
           Cpu: !Ref 'ContainerCpu'
@@ -185,6 +232,12 @@ Resources:
           Image: !Ref 'ImageUrl'
           PortMappings:
             - ContainerPort: !Ref 'ContainerPort'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref AWS::StackName
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: 'aws-mqbridge-ssm-logs'
           Environment:
 
           - Name: 'websphereMQ.userName'
@@ -201,10 +254,10 @@ Resources:
             Value: !Ref Environment
           - Name: 'AWS_REGION'
             Value: !Ref AWSRegion
-          - Name: 'AWS_ACCESS_KEY_ID'
-            Value: !Ref AWSAccessKeyID
-          - Name: 'AWS_SECRET_ACCESS_KEY'
-            Value: !Ref AWSSecretAccessKey
+          #- Name: 'AWS_ACCESS_KEY_ID'
+          #  Value: !Ref AWSAccessKeyID
+          #- Name: 'AWS_SECRET_ACCESS_KEY'
+          #  Value: !Ref AWSSecretAccessKey
 
   # The service. The service is a resource which allows you to run multiple
   # copies of a type of task, and gather up their logs and metrics, as well
@@ -232,6 +285,11 @@ Resources:
             - 'subnet-07b619e7c5df937e3'
       TaskDefinition: !Ref taskdefinition
 
+  CloudWatchLogsGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+          LogGroupName: !Ref AWS::StackName
+          RetentionInDays: 365
 Outputs:
   ClusterName:
     Description: The name of the ECS cluster
