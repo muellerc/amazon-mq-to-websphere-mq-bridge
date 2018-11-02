@@ -1,49 +1,87 @@
-# Step 3: Deploy this sample via AWS CloudFormation
+# Step 3: Set-up the JMS bridge sample services
 
-In this step you will deply the entire sample via [AWS CloudFormation](https://aws.amazon.com/cloudformation/).
+In this step you will compile, package and dockerize the JMS bridge samples, we have prepared for you.
 
-### 1. Select your region and launch the AWS CloudFormation template.
+### 1. Compile the samples
 
-> To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed!.
+> To be able to run this step, it's required to have Java 8 (or later) and Apache Maven installed!
 
-Run the first command to launch the AWS CloudFormation template. The second command will wait, until the AWS CloudFormation stack was launched successfuly and ready to use:
+In the root directory of this project, run the following command to compile and package the provides samples which are:  
 
-TODO: in progress to develop the CloudFormation template.
+* **1. sample-with-env-variables** - The most basic sample which is using environment variables to supply configuration parameters to the JMS bridge.
 
-```bash
-aws cloudformation create-stack \
-    --stack-name amazon-mq-to-websphere-mq-bridge \
-    --template-body file://master.yaml \
-    --capabilities CAPABILITY_IAM \
-    --parameters ParameterKey=IBMMQDockerImageRepositoryUrl,ParameterValue=<IBMMQDockerImageRepositoryUrl> \
-    ParameterKey=SampleWithNativeMappingDockerImageRepositoryUrl,ParameterValue=<SampleWithNativeMappingDockerImageRepositoryUrl> \
-    ParameterKey=SampleWithEnvVariablesSMDockerImageRepositoryUrl,ParameterValue=<SampleWithEnvVariablesSMDockerImageRepositoryUrl> \
-    ParameterKey=SampleWithAWSSSMDockerImageRepositoryUrl,ParameterValue=<SampleWithAWSSSMDockerImageRepositoryUrl> \
-    ParameterKey=BrokerUsername,ParameterValue=<BrokerUsername> \
-    ParameterKey=BrokerPassword,ParameterValue=<BrokerPassword>
+* **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the required parameters at startup time.
 
-aws cloudformation wait stack-create-complete \
-    --stack-name amazon-mq-to-websphere-mq-bridge
+* **3. sample-with-native-mapping** - This sample is demonstrating, how to map native IBM® MQ attributes. This is for example necessary, if your current solutions is using the native IBM protocoll to interact with IBM® MQ and not the JMS API. 
+
+``` bash
+mvn clean package
 ```
 
-### 2. Login to the IBM Console.
+After a successful run, you should see a console output like this:
+``` bash
+[INFO] Reactor Summary:
+[INFO]
+[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.300 s]
+[INFO] sample-with-env-variables .......................... SUCCESS [  9.666 s]
+[INFO] sample-with-aws-ssm ................................ SUCCESS [  6.101 s]
+[INFO] sample-with-nativemq-mapping 1.0.0-SNAPSHOT ........ SUCCESS [  4.572 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
 
-TODO
+### 2. Create the Amazon ECR repository which will host our Docker images
 
-### 3. Login to the Amazon MQ Console / Active MQ Console.
+> To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed! If you haven't it installed yet, you can also use the [Amazon ECR console](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) to create the repository.
 
-TODO
+``` bash
+aws ecr create-repository \
+    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-env-variables
 
-### 4. Ingest messages on the IBM® MQ site and listen on the Amazon MQ Console.
+aws ecr create-repository \
+    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm
 
-TODO
+aws ecr create-repository \
+    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping
+```
 
-### 5. Ingest messages on the Amazon MQ site and listen on the IBM® MQ.
+### 3. Create the Docker images and upload it to Amazon ECR
 
-TODO
+> To be able to run this step, it's required to have Docker installed on your machine!.
+
+Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
+
+``` bash
+$(aws ecr get-login --no-include-email --region <region>)
+
+# first sample
+
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-env-variables .
+
+docker tag amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
+
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
+
+# seconds sample
+
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm .
+
+docker tag amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
+
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
+
+# third sample
+
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping .
+
+docker tag amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
+
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
+```
 
 # Completion
 
-Congratulations, you've successfully completed step 3! This is the last step in the workshop.
+Congratulations, you've successfully completed step 3! You can move on to [Step 4: Deploy one of the three sample services](/step-4.md)
 
 [Return the the sample landing page](/README.md)

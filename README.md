@@ -18,6 +18,8 @@ To build and run this example, you have to follow 3 steps we will discuss in det
 
 * **[Step 1: Set-up the on-premises broker](/step-1.md)** - Here, we are creating a Docker image which contains the IBM® MQ broker to have an easy way to run this broker in AWS.
 
-* **[Step 2: Set-up the JMS bridge sample service](/step-2.md)** - Here, we are creating a Docker image which includes the JMS bridge sample service to have an easy way to run this application.
+* **[Step 2: Deploy the broker infrastructure via AWS CloudFormation](/step-2.md)** - Here, we are executing an [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provisioning our on-premises IBM® MQ in [AWS Fargate](https://aws.amazon.com/fargate/) and to create the managed [Amazon MQ](https://aws.amazon.com/amazon-mq/) broker.
 
-* **[Step 3: Deploy this sample via AWS CloudFormation](/step-3.md)** - Here, we are executing an [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to which is provisioning our on-premises IBM® MQ in [AWS Fargate](https://aws.amazon.com/fargate/), create the managed [Amazon MQ](https://aws.amazon.com/amazon-mq/) broker and deploy our JMS bridge sample service to [AWS Fargate](https://aws.amazon.com/fargate/).
+* **[Step 3: Set-up the JMS bridge sample services](/step-3.md)** - Here, we are creating Docker images for all three JMS bridge sample services, to have an easy way to run this application in step 4.
+
+* **[Step 4: Deploy one of the three sample services](/step-4.md)** - Here, we are deploying one of the three JMS bridge samples, we have prepared for you.

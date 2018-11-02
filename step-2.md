@@ -1,88 +1,42 @@
-# Step 2: Set-up the JMS bridge sample service
+# Step 2: Deploy the broker infrastructure via AWS CloudFormation
 
-In this step you will compile, package and dockerize the JMS bridge samples, we have prepared for you.
+In this step you will deply the entire sample via [AWS CloudFormation](https://aws.amazon.com/cloudformation/).
 
-### 1. Compile the samples
+### 1. Select your region and launch the AWS CloudFormation template.
 
-> To be able to run this step, it's required to have Java 8 (or later) and Apache Maven installed!
+> To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed!.
 
-In the root directory of this project, run the following command to compile and package the provides samples which are:  
+Run the first command to launch the AWS CloudFormation template. The second command will wait, until the AWS CloudFormation stack was launched successfuly and ready to use. Alternatively, you can also open your CloudFormation console and watch the resource creation process. It takes up to 15 minutes to complete:
 
-* **1. sample-with-env-variables** - The most basic sample which is using environment variables to supply configuration parameters to the JMS bridge.
+```bash
+aws cloudformation create-stack \
+    --stack-name amazon-mq-to-websphere-mq-bridge-environment \
+    --template-body file://master.yaml \
+    --capabilities CAPABILITY_IAM
 
-* **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the required parameters at startup time.
-
-* **3. sample-with-native-mapping** - This sample is demonstrating, how to map native IBM® MQ attributes. This is for example necessary, if your current solutions is using the native IBM protocoll to interact with IBM® MQ and not the JMS API. 
-
-``` bash
-mvn clean package
+aws cloudformation wait stack-create-complete \
+    --stack-name amazon-mq-to-websphere-mq-bridge-environment
 ```
 
-After a successful run, you should see a console output like this:
-``` bash
-[INFO] Reactor Summary:
-[INFO]
-[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.300 s]
-[INFO] sample-with-env-variables .......................... SUCCESS [  9.666 s]
-[INFO] sample-with-aws-ssm ................................ SUCCESS [  6.101 s]
-[INFO] sample-with-nativemq-mapping 1.0.0-SNAPSHOT ........ SUCCESS [  4.572 s]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-```
+### 2. Login to the IBM Console.
 
-### 2. Create the Amazon ECR repository which will host our Docker images
+In your [Fargate console](https://console.aws.amazon.com/ecs/home?#/clusters/ibm-mq-cluster/tasks) you should see one running task with the task definition name **ibm-mq-broker-task:#**. Klick on the task link and lookup the public IP address which is assigned to your IBM MQ broker.  
 
-> To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed! If you haven't it installed yet, you can also use the [Amazon ECR console](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) to create the repository.
+To access the console of your IBM MQ broker, go to:  
+https://\<public IP\>:9443/ibmmq/console/
 
-``` bash
-aws ecr create-repository \
-    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-env-variables
+You can use this web console to read messages from the broker and write messages to it.
 
-aws ecr create-repository \
-    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm
+### 3. Login to the Amazon MQ Console / Active MQ Console.
 
-aws ecr create-repository \
-    --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping
-```
+Open a new tab and got to your [Amazon MQ broker console](https://console.aws.amazon.com/amazon-mq/home?#/brokers/) and click on the broker with the name **AmazonMQBroker**. In the **Connections** section, figure out which of the both **ActiveMQ Web Console** links are active. To access the web console, provide the Amazon MQ broker user and password. If you don't have provided a specific value, use the following ones:  
+* User: AmazonMQBrokerUserName
+* Password: AmazonMQBrokerPassword
 
-### 3. Create the Docker images and upload it to Amazon ECR
-
-> To be able to run this step, it's required to have Docker installed on your machine!.
-
-Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
-
-``` bash
-$(aws ecr get-login --no-include-email --region <region>)
-
-# first sample
-
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-env-variables .
-
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
-
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
-
-# seconds sample
-
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm .
-
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
-
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
-
-# third sample
-
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping .
-
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
-
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
-
-```
+You can use this web console to read messages from the broker and write messages to it.
 
 # Completion
 
-Congratulations, you've successfully completed step 2! You can move on to [Step 3: Deploy this sample via  AWS CloudFormation](/step-3.md)
+Congratulations, you've successfully completed step 2! You can move on to [Step 3: Set-up the JMS bridge sample services](/labs/lab-3.md)
 
 [Return the the sample landing page](/README.md)
