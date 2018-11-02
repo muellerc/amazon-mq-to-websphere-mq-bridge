@@ -57,7 +57,7 @@ $(aws ecr get-login --no-include-email --region <region>)
 
 # first sample
 
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-env-variables sample-with-env-variables/.
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-env-variables .
 
 docker tag amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
 
@@ -65,7 +65,7 @@ docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-m
 
 # seconds sample
 
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm sample-with-aws-ssm/.
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm .
 
 docker tag amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
 
@@ -73,7 +73,7 @@ docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-m
 
 # third sample
 
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping sample-with-nativemq-mapping/.
+docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping .
 
 docker tag amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
 

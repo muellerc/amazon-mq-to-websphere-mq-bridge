@@ -15,7 +15,12 @@ aws cloudformation create-stack \
     --stack-name amazon-mq-to-websphere-mq-bridge \
     --template-body file://master.yaml \
     --capabilities CAPABILITY_IAM \
-    --parameters ParameterKey=Key,ParameterValue=Value
+    --parameters ParameterKey=IBMMQDockerImageRepositoryUrl,ParameterValue=<IBMMQDockerImageRepositoryUrl> \
+    ParameterKey=SampleWithNativeMappingDockerImageRepositoryUrl,ParameterValue=<SampleWithNativeMappingDockerImageRepositoryUrl> \
+    ParameterKey=SampleWithEnvVariablesSMDockerImageRepositoryUrl,ParameterValue=<SampleWithEnvVariablesSMDockerImageRepositoryUrl> \
+    ParameterKey=SampleWithAWSSSMDockerImageRepositoryUrl,ParameterValue=<SampleWithAWSSSMDockerImageRepositoryUrl> \
+    ParameterKey=BrokerUsername,ParameterValue=<BrokerUsername> \
+    ParameterKey=BrokerPassword,ParameterValue=<BrokerPassword>
 
 aws cloudformation wait stack-create-complete \
     --stack-name amazon-mq-to-websphere-mq-bridge

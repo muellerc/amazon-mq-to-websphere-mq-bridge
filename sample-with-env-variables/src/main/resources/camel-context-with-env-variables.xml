@@ -38,14 +38,14 @@
     <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
-            <from uri="amazonMQ:queue.A"/>
-            <to uri="websphereMQ:queue.B"/>
+            <from uri="amazonMQ:queue:DEV.QUEUE.1"/>
+            <to uri="websphereMQ:queue:DEV.QUEUE.1"/>
         </route>
 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
-            <from uri="websphereMQ:queue.C"/>
-            <to uri="amazonMQ:queue.D"/>
+            <from uri="websphereMQ:queue:DEV.QUEUE.2"/>
+            <to uri="amazonMQ:queue:DEV.QUEUE.2"/>
         </route>
     </camelContext>
 </beans>

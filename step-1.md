@@ -26,7 +26,7 @@ make build-devserver
 
 ### 3. Tag the Docker image and upload it to Amazon ECR.
 
-Now we are tagging the locally created Docker image and pushing it to your ECR repository:
+Now we are tagging the locally created Docker image and pushing it to your ECR repository. Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
 
 ``` bash
 $(aws ecr get-login --no-include-email --region <region>)
@@ -37,6 +37,10 @@ aws ecr create-repository \
 docker tag  mqadvanced-server-dev:9.0.5.0-x86_64-ubuntu-16.04 <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:9.0.5
 
 docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:9.0.5
+
+docker tag  mqadvanced-server-dev:9.0.5.0-x86_64-ubuntu-16.04 <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:latest
+
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:latest
 ```
 
 ### 4. Run und test it locally.
