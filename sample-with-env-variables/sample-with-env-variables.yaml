@@ -32,17 +32,17 @@ Resources:
       VpcId: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:VPC'}
       Tags:
       - Key: Name
-        Value: !Sub '${AWS::StackName}:PublicSubnet2'
+        Value: !Sub '${AWS::StackName}:JMSBridgeSecurityGroup'
 
   JMSBridgeECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: jms-bridge-cluster
+      ClusterName: sample-with-env-variables
 
   JMSBridgeECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: jms-bridge-task
+      Family: sample-with-env-variables
       Cpu: 1024
       Memory: 2048
       NetworkMode: awsvpc
@@ -50,7 +50,7 @@ Resources:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
-        - Name: jms-bridge
+        - Name: sample-with-env-variables
           Cpu: 1024
           Memory: 2048
           Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest'
@@ -81,13 +81,13 @@ Resources:
   CloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: cmr/ecs/jms-bridge-cluster
+      LogGroupName: cmr/ecs/sample-with-env-variables-cluster
       RetentionInDays: 30
 
   JMSBridgeECSService:
     Type: AWS::ECS::Service
     Properties:
-      ServiceName: jms-bridge-service
+      ServiceName: sample-with-env-variables-service
       Cluster: !Ref JMSBridgeECSCluster
       LaunchType: FARGATE
       DeploymentConfiguration:

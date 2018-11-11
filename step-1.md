@@ -26,7 +26,7 @@ make build-devserver
 
 ### 3. Tag the Docker image and upload it to Amazon ECR.
 
-Now we are tagging the locally created Docker image and pushing it to your ECR repository. Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
+Now we are tagging the locally created Docker image with the tag '9.0.5' and 'latest' and pushing it to your ECR repository. Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
 
 ``` bash
 $(aws ecr get-login --no-include-email --region <region>)
@@ -64,9 +64,31 @@ After a successful login, you should see a screen similar to this one:
 
 ![Amazon MQ workshop Lab 1 step 2](/images/IBM_Console.png)
 
+### 5. Deploy and run the IBM® MQ broker to AWS
+
+> To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed!
+
+Now we are ready to run run our IBM® MQ broker as Amazon ECS task in Fargate. Run the first command to launch the AWS CloudFormation template. The second command will wait, until the AWS CloudFormation stack was launched successfuly and is ready to use. Alternatively, you can also open your CloudFormation console and watch the resource creation process. It takes up to 5 minutes to complete:
+
+```bash
+aws cloudformation create-stack \
+    --stack-name ibm-mq-broker \
+    --template-body file://ibm-mq-broker.yaml \
+    --capabilities CAPABILITY_IAM
+
+aws cloudformation wait stack-create-complete \
+    --stack-name ibm-mq-broker
+```
+
+In your [Fargate console](https://console.aws.amazon.com/ecs/home?#/clusters/ibm-mq-cluster/tasks) you should see one running task with the task definition name **ibm-mq-broker-task:#**. Klick on the task link and lookup the public IP address which is assigned to your IBM MQ broker.  
+
+To access the console of your IBM MQ broker, go to:  
+https://\<public IP\>:9443/ibmmq/console/
+
+You can use this web console to read messages from the broker and write messages to it.
 
 # Completion
 
-Congratulations, you've successfully completed step 1! You can move on to [Step 2: Set-up the JMS bridge sample service](/labs/lab-2.md)
+Congratulations, you've successfully completed step 1! You can move on to [Step 2: Deploy the Amazon MQ broker](/labs/lab-2.md)
 
 [Return the the sample landing page](/README.md)

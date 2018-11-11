@@ -11,13 +11,13 @@ In this step you will deploy one of the samples we have prepared for you. Please
 cd sample-with-env-variables
 
 aws cloudformation create-stack \
-    --stack-name jms-bridge-sample-with-env-variables \
-    --template-body file://master.yaml \
+    --stack-name sample-with-env-variables \
+    --template-body file://sample-with-env-variables.yaml \
     --capabilities CAPABILITY_IAM \
     --parameters ParameterKey=IBMMQBrokerHost,ParameterValue=<IBMMQBrokerHost>
 
 aws cloudformation wait stack-create-complete \
-    --stack-name jms-bridge-sample-with-env-variables
+    --stack-name sample-with-env-variables
 ```
 
 * **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the required parameters at startup time.
@@ -26,13 +26,13 @@ aws cloudformation wait stack-create-complete \
 cd sample-with-aws-ssm
 
 aws cloudformation create-stack \
-    --stack-name jms-bridge-sample-with-aws-ssm \
-    --template-body file://master.yaml \
+    --stack-name sample-with-aws-ssm \
+    --template-body file://sample-with-aws-ssm.yaml \
     --capabilities CAPABILITY_IAM \
     --parameters ParameterKey=IBMMQBrokerHost,ParameterValue=<IBMMQBrokerHost>
 
 aws cloudformation wait stack-create-complete \
-    --stack-name jms-bridge-sample-with-aws-ssm
+    --stack-name sample-with-aws-ssm
 ```
 
 * **3. sample-with-native-mapping** - This sample is demonstrating, how to map native IBM® MQ attributes. This is for example necessary, if your current solutions is using the native IBM protocoll to interact with IBM® MQ and not the JMS API. 
@@ -41,13 +41,13 @@ aws cloudformation wait stack-create-complete \
 cd sample-with-native-mapping
 
 aws cloudformation create-stack \
-    --stack-name jms-bridge-sample-with-native-mapping \
-    --template-body file://master.yaml \
+    --stack-name sample-with-native-mapping \
+    --template-body file://sample-with-native-mapping.yaml \
     --capabilities CAPABILITY_IAM \
     --parameters ParameterKey=IBMMQBrokerHost,ParameterValue=<IBMMQBrokerHost>
 
 aws cloudformation wait stack-create-complete \
-    --stack-name jms-bridge-sample-with-native-mapping
+    --stack-name sample-with-native-mapping
 ```
 
 ### 2. Ingest messages on the Amazon MQ site and listen on the IBM® MQ.

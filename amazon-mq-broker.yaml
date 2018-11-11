@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploys an Amazon MQ broker into a new VPC with 2 public subnets.
+Description: Deploys an Amazon MQ broker.
 
 Parameters:
   Stage:
@@ -18,22 +18,11 @@ Parameters:
     Default: AmazonMQBrokerPassword
     Description: The password of the Amazon MQ broker user.
 
-  IBMMQBrokerPassword:
-    NoEcho: true
-    Type: String
-    Default: passw0rd
-    Description: The password of the IBM MQ application user.
-
-  IBMMQBrokerQueueManager:
-    Type: String
-    Default: QMGR
-    Description: The IBM MQ broker queue manager name.
-
 Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.11.0.0/16
+      CidrBlock: 10.111.0.0/16
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
@@ -72,7 +61,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.11.0.0/24
+      CidrBlock: 10.111.0.0/24
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
       - Key: Name
@@ -82,7 +71,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: 10.11.1.0/24
+      CidrBlock: 10.111.1.0/24
       AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
       - Key: Name
@@ -99,32 +88,6 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref RouteTable
-
-  JmsBridgeSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Limits security group ingress and egress traffic for the JMS bridge
-      VpcId: !Ref VPC
-      SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: 8162
-        ToPort: 8162
-        SourceSecurityGroupId: !Ref IBMMQSecurityGroup
-
-  IBMMQSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Limits security group ingress and egress traffic for the WebSphere MQ instance
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 9443
-        ToPort: 9443
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 1414
-        ToPort: 1414
-        CidrIp: 0.0.0.0/0
 
   AmazonMQSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -181,82 +144,6 @@ Resources:
           Username: 
             Ref: AmazonMQBrokerUserName
 
-  ECSTaskExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: [ecs-tasks.amazonaws.com]
-          Action: ['sts:AssumeRole']
-      Path: /
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-
-  IBMMQECSCluster:
-    Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: ibm-mq-cluster
-
-  IBMMQECSTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: ibm-mq-broker-task
-      Cpu: 1024
-      Memory: 2048
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      ContainerDefinitions:
-        - Name: mqadvanced-server-dev
-          Cpu: 1024
-          Memory: 2048
-          Image: !Join [ '', [ !Ref 'AWS::AccountId', '.dkr.ecr.', !Ref 'AWS::Region', '.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:latest' ] ]
-          PortMappings:
-            - ContainerPort: 1414
-            - ContainerPort: 9443
-          Environment:
-            - Name: LICENSE
-              Value: accept
-            - Name: MQ_QMGR_NAME
-              Value: !Ref IBMMQBrokerQueueManager
-            - Name: MQ_ADMIN_PASSWORD
-              Value: !Ref IBMMQBrokerPassword
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref CloudWatchLogsGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ibm-mq-broker-task
-
-  CloudWatchLogsGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: cmr/ecs/ibm-mq-cluster
-      RetentionInDays: 30
-
-  IBMMQECSService:
-    Type: AWS::ECS::Service
-    Properties:
-      ServiceName: ibm-mq-broker-service
-      Cluster: !Ref IBMMQECSCluster
-      LaunchType: FARGATE
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 100
-      DesiredCount: 1
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          SecurityGroups:
-            - !Ref IBMMQSecurityGroup
-          Subnets:
-            - !Ref PublicSubnet1
-            - !Ref PublicSubnet2
-      TaskDefinition: !Ref IBMMQECSTaskDefinition
-
 Outputs:
   VPCRef:
     Description: The reference to the created VPC.
@@ -293,31 +180,3 @@ Outputs:
     Value: !Sub 'failover:(ssl://${AmazonMQBroker}-1.mq.${AWS::Region}.amazonaws.com:61617,ssl://${AmazonMQBroker}-2.mq.${AWS::Region}.amazonaws.com:61617)'
     Export:
       Name: !Sub '${Stage}:JMS-BRIDGE:AmazonMQBrokerURL'
-
-  IBMMQBrokerUserNameRef:
-    Description: The reference to the IBM MQ broker application user name.
-    Value: 'admin'
-    Export:
-      Name: !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerUserName'
-
-  IBMMQBrokerPasswordRef:
-    Description: The reference to the IBM MQ broker application user password.
-    Value: !Ref IBMMQBrokerPassword
-    Export:
-      Name: !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerPassword'
-
-  IBMMQBrokerQueueManagerRef:
-    Description: The reference to the IBM MQ broker queue manager.
-    Value: !Ref IBMMQBrokerQueueManager
-    Export:
-      Name: !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerQueueManager'
-
-  IBMMQBrokerChannelRef:
-    Description: The reference to the IBM MQ broker channel.
-    Value: 'DEV.ADMIN.SVRCONN'
-    Export:
-      Name: !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerChannel'
-
-  # IBMMQConsole:
-  #   Description: The console url for our IBM MQ broker.
-  #   Value: !Sub 'https://${xxx}:9443/ibmmq/console/login.html'

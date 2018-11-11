@@ -1,41 +1,16 @@
 # Step 3: Set-up the JMS bridge sample services
 
-In this step you will compile, package and dockerize the JMS bridge samples, we have prepared for you.
+In this step you will compile, package, dockerize and upload the JMS bridge samples, we have prepared for you.
 
-### 1. Compile the samples
-
-> To be able to run this step, it's required to have Java 8 (or later) and Apache Maven installed!
-
-In the root directory of this project, run the following command to compile and package the provides samples which are:  
-
-* **1. sample-with-env-variables** - The most basic sample which is using environment variables to supply configuration parameters to the JMS bridge.
-
-* **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the required parameters at startup time.
-
-* **3. sample-with-native-mapping** - This sample is demonstrating, how to map native IBM® MQ attributes. This is for example necessary, if your current solutions is using the native IBM protocoll to interact with IBM® MQ and not the JMS API. 
-
-``` bash
-mvn clean package
-```
-
-After a successful run, you should see a console output like this:
-``` bash
-[INFO] Reactor Summary:
-[INFO]
-[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.300 s]
-[INFO] sample-with-env-variables .......................... SUCCESS [  9.666 s]
-[INFO] sample-with-aws-ssm ................................ SUCCESS [  6.101 s]
-[INFO] sample-with-nativemq-mapping 1.0.0-SNAPSHOT ........ SUCCESS [  4.572 s]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-```
-
-### 2. Create the Amazon ECR repository which will host our Docker images
+### 1. Create the Amazon ECR repositories which will host our Docker images
 
 > To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed! If you haven't it installed yet, you can also use the [Amazon ECR console](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) to create the repository.
 
+First, we will create the Amazon ECR repositories which will host our Docker images. You can look up these images later [here](https://console.aws.amazon.com/ecs/home?#/repositories):
+
 ``` bash
+$(aws ecr get-login --no-include-email --region <region>)
+
 aws ecr create-repository \
     --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-env-variables
 
@@ -46,42 +21,79 @@ aws ecr create-repository \
     --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping
 ```
 
-### 3. Create the Docker images and upload it to Amazon ECR
+### 2. Compile, package, docerize and upload the samples
 
-> To be able to run this step, it's required to have Docker installed on your machine!.
+> To be able to run this step, it's required to have Java 8 (or later) and Apache Maven installed!
 
-Before you can run the following commands, please replace '\<account-id>' and '\<region>' with your values.
+In this step we are using Apache Maven, to automaticelly achieve to following per sample application:
+- compile the Java based sample application
+- package the application in a self-contained uber-JAR
+- create a Docker image which contains the sample
+- upload this image to Amazon ECR, a private Docker repository
+
+Next, run the following command:
 
 ``` bash
-$(aws ecr get-login --no-include-email --region <region>)
+aws ecr get-login --no-include-email
+```
 
-# first sample
+It will return an output like the following, where you have to look up the password for the basic Auth against Amazon ECR (followed by the -p):
 
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-env-variables .
+``` bash
+docker login -u AWS -p eyJwY...1MX0= https://xxxxxxxxxxxx.dkr.ecr.eu-central-1.amazonaws.com
+```
 
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
+Now, we have to provide a few configuration parameter to Maven. This is done, by creating (if not present) or extending the Maven settings.xml configuration file, which is located at ~/.m2/settings.xml. It has to have the following configuration entries:
 
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-env-variables:latest
+``` xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- configure the AWS account id for your account -->
+                <aws-account-id>xxxxxxxxxxxx</aws-account-id>
+            </properties>
+        </profile>
+    </profiles>
 
-# seconds sample
+    <servers>
+        <!-- Maven is using these configurations for basic Auth to push your image to Amazon ECR -->
+        <server>
+            <!-- chose the region your are using. I'm using eu-central-1 (Frankfurt) -->
+            <id>xxxxxxxxxxxx.dkr.ecr.eu-central-1.amazonaws.com</id>
+            <username>AWS</username>
+            <!-- The password you were looking up by running 'aws ecr get-login --no-include-email'. This password is temporary and you have to update it once a while -->
+            <password>eyJw...zE5NH0=</password>
+        </server>
+    </servers>
+</settings>
+```
 
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm .
+Now, in the root directory of this project, run the following command to do all the 4 steps we mentioned before:  
 
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
+``` bash
+mvn clean deploy
+```
 
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest
+After a successful run, you should see a console output like this:
 
-# third sample
-
-docker build -t amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping .
-
-docker tag amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
-
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping:latest
+``` bash
+[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.743 s]
+[INFO] sample-with-env-variables .......................... SUCCESS [01:20 min]
+[INFO] sample-with-aws-ssm ................................ SUCCESS [02:31 min]
+[INFO] sample-with-nativemq-mapping 1.0.0-SNAPSHOT ........ SUCCESS [01:06 min]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
 ```
 
 # Completion
 
-Congratulations, you've successfully completed step 3! You can move on to [Step 4: Deploy one of the three sample services](/step-4.md)
+Congratulations, you've successfully completed step 3! You can move on to [Step 4: Deploy the sample service of your choice](/step-4.md)
 
 [Return the the sample landing page](/README.md)
