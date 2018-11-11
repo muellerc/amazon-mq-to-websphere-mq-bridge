@@ -56,29 +56,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.8</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>push</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- configure your Amazon ECR repository URI: https://console.aws.amazon.com/ecs/home?#/repositories -->
-                    <repository>${aws-account-id}.dkr.ecr.eu-central-1.amazonaws.com/amazon-mq-to-websphere-mq-bridge/${project.artifactId}</repository>
-                    <tag>latest</tag>
-                    <buildArgs>
-                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
-                    </buildArgs>
-                    <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.1.0</version>
@@ -116,6 +93,26 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.8</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- configure your Amazon ECR repository URI: https://console.aws.amazon.com/ecs/home?#/repositories -->
+                    <repository>${aws-account-id}.dkr.ecr.eu-central-1.amazonaws.com/amazon-mq-to-websphere-mq-bridge/${project.artifactId}</repository>
+                    <tag>latest</tag>
+                    <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+                </configuration>
             </plugin>
         </plugins>
     </build>

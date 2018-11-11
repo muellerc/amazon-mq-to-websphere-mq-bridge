@@ -5,44 +5,23 @@
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
+
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
 
     <bean id="ssm" class="com.amazonaws.samples.AmazonSystemsManagerParameterStorePropertyPlaceholderConfigurer">
         <property name="env" value="${env}" />
     </bean>
-	<!-- 
-    <bean id="amqUserName" factory-bean="ssm" factory-method="lookup">
-        <constructor-arg value="SERVICE-A/AMAZONMQ/USERNAME" />
-    </bean>
-    -->
 
     <bean id="amazonMQ" class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="connectionFactory">
             <bean class="org.apache.activemq.ActiveMQConnectionFactory">
-                <!-- my favorite way to lookup parameters from Amazon SystemsManager Parameter Store
-                     but required the most engineering effort -->
-                <!-- <property name="brokerURL" value="$[amazonMQ.brokerURL]" /> -->
-
-                <property name="brokerURL">
-                    <bean factory-bean="ssm" factory-method="lookup">
-                        <constructor-arg value="SERVICE-A/AMAZONMQ/BROKERURL" />
-                    </bean>
-                </property>
-
-                <!-- my second favorite way to lookup parameters from Amazon SystemsManager Parameter Store
-                     inner factory-bean lookup -->
+                <property name="brokerURL" value="${amazonMQ.brokerURL}" />
+                <property name="userName" value="${amazonMQ.userName}" />
                 <property name="password">
                     <bean factory-bean="ssm" factory-method="lookup">
-                        <constructor-arg value="SERVICE-A/AMAZONMQ/PASSWORD" />
+                        <constructor-arg value="JMS-BRIDGE/AMAZONMQ/PASSWORD" />
                     </bean>
                 </property>
-                <property name="userName">
-                    <bean factory-bean="ssm" factory-method="lookup">
-                        <constructor-arg value="SERVICE-A/AMAZONMQ/USERNAME" />
-                    </bean>
-                </property>
-                <!-- probably the most common way to lookup the properties -->
-                <!-- <property name="userName" ref="amqUserName" /> -->
             </bean>
         </property>
     </bean>
@@ -60,7 +39,11 @@
                     </bean>
                 </property>
                 <property name="username" value="${websphereMQ.userName}" />
-                <property name="password" value="${websphereMQ.password}" />
+                <property name="password">
+                    <bean factory-bean="ssm" factory-method="lookup">
+                        <constructor-arg value="JMS-BRIDGE/IBMMQ/PASSWORD" />
+                    </bean>
+                </property>
             </bean>
         </property>
     </bean>
@@ -68,14 +51,14 @@
     <camelContext id="wmq-to-amq-bridge" xmlns="http://camel.apache.org/schema/spring">
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
-            <from uri="amazonMQ:queue.A"/>
-            <to uri="websphereMQ:DEV.QUEUE.3"/>
+            <from uri="amazonMQ:queue:DEV.QUEUE.1"/>
+            <to uri="websphereMQ:queue:DEV.QUEUE.1"/>
         </route>
 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
-            <from uri="websphereMQ:DEV.QUEUE.2"/>
-            <to uri="amazonMQ:queue.D"/>
+            <from uri="websphereMQ:queue:DEV.QUEUE.2"/>
+            <to uri="amazonMQ:queue:DEV.QUEUE.2"/>
         </route>
     </camelContext>
 </beans>

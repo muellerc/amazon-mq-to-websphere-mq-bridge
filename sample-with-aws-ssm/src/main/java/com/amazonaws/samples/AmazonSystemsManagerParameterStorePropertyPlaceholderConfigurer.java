@@ -23,7 +23,7 @@ public class AmazonSystemsManagerParameterStorePropertyPlaceholderConfigurer imp
     private String internalLookup(String parameter, boolean decrypt) {
         return ssmClient.getParameter(
             new GetParameterRequest()
-                .withName(env + "/" + parameter)
+                .withName("/" + env + "/" + parameter)
                 .withWithDecryption(Boolean.TRUE))
                 .getParameter().getValue();
     }
