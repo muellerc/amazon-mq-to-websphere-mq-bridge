@@ -20,7 +20,14 @@ aws cloudformation wait stack-create-complete \
     --stack-name sample-with-env-variables
 ```
 
-* **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the required parameters at startup time.
+* **2. sample-with-aws-ssm** - In this sample we are using the [AWS Systems Manager Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store) to store the secrets in a secure manner. The JMS bridge sample application does an secure lookup to retrive the password for the Amazpn MQ broker and the IBM MQ broker at startup time.
+This sample expects the parameter '/DEV/JMS-BRIDGE/AMAZONMQ/PASSWORD' and '/DEV/JMS-BRIDGE/IBMMQ/PASSWORD' to be present in the AWS SSM sarameter store. You can use the [AWS Systems Manager Parameter Store console](https://console.aws.amazon.com/systems-manager/parameters/) to create these entries, or simply by running the following commands (replace the <password> with the password you have chosen):
+
+``` bash
+aws ssm put-parameter --type SecureString --name '/DEV/JMS-BRIDGE/AMAZONMQ/PASSWORD' --value '<password>'
+
+aws ssm put-parameter --type SecureString --name '/DEV/JMS-BRIDGE/IBMMQ/PASSWORD' --value '<password>'
+```
 
 ``` bash
 cd sample-with-aws-ssm
