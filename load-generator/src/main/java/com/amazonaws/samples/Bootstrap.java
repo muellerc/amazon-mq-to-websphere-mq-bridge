@@ -71,6 +71,13 @@ public class Bootstrap {
             while (true) {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
+
+                    if (counter.get() % 100 == 0) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                 } catch (JMSException e) {
                     log.info("Received exception {}", e.getMessage());
                 }
@@ -113,6 +120,13 @@ public class Bootstrap {
             while (true) {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
+
+                    if (counter.get() % 100 == 0) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                 } catch (JMSException e) {
                     log.info("Received exception {}", e.getMessage());
                 }
