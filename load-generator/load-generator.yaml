@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy a JMS-bridge service on AWS Fargate, which is looking up secrets in AWS SSM.
+Description: Deploy the load generator service on AWS Fargate.
 
 Parameters:
   Stage:
@@ -25,63 +25,42 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 
-  ECSTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: [ecs-tasks.amazonaws.com]
-          Action: ['sts:AssumeRole']
-      Path: /
-      Policies:
-        - PolicyName: ECSTaskRolePolicy
-          PolicyDocument:
-            Statement:
-            - Effect: Allow
-              Action:
-                - ssm:GetParameter
-                - kms:Decrypt
-              Resource: '*'
-
-  JMSBridgeSecurityGroup:
+  LoadGeneratorSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Limits security group ingress and egress traffic for the JMS bridge instance
       VpcId: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:VPC'}
       Tags:
       - Key: Name
-        Value: !Sub '${AWS::StackName}:JMSBridgeSecurityGroup'
+        Value: !Sub '${AWS::StackName}:LoadGeneratorSecurityGroup'
 
-  JMSBridgeECSCluster:
+  LoadGeneratorECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: sample-with-aws-ssm-cluster
+      ClusterName: load-generator-cluster
 
-  JMSBridgeECSTaskDefinition:
+  LoadGeneratorECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: sample-with-aws-ssm-task
-      Cpu: 2048
-      Memory: 4096
+      Family: load-generator-task
+      Cpu: 256
+      Memory: 512
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
-      TaskRoleArn: !Ref ECSTaskRole
       ContainerDefinitions:
-        - Name: sample-with-aws-ssm-task
+        - Name: load-generator-task
           Cpu: 256
           Memory: 512
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/amazon-mq-to-websphere-mq-bridge/sample-with-aws-ssm:latest'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/amazon-mq-to-websphere-mq-bridge/load-generator:latest'
           Environment:
-            - Name: env
-              Value: DEV
             - Name: amazonMQ.brokerURL
               Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:AmazonMQBrokerURL'}
             - Name: amazonMQ.userName
               Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:AmazonMQBrokerUserName'}
+            - Name: amazonMQ.password
+              Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:AmazonMQBrokerPassword'}
             - Name: websphereMQ.hostName
               Value: !Ref IBMMQBrokerHost
             - Name: websphereMQ.queueManager
@@ -90,24 +69,26 @@ Resources:
               Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerChannel'}
             - Name: websphereMQ.userName
               Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerUserName'}
+            - Name: websphereMQ.password
+              Value: {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:IBMMQBrokerPassword'}
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref CloudWatchLogsGroup
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: sample-with-aws-ssm
+              awslogs-stream-prefix: load-generator
 
   CloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: cmr/ecs/sample-with-aws-ssm-cluster
+      LogGroupName: cmr/ecs/load-generator-cluster
       RetentionInDays: 30
 
-  JMSBridgeECSService:
+  LoadGeneratorECSService:
     Type: AWS::ECS::Service
     Properties:
-      ServiceName: sample-with-aws-ssm-service
-      Cluster: !Ref JMSBridgeECSCluster
+      ServiceName: load-generator-service
+      Cluster: !Ref LoadGeneratorECSCluster
       LaunchType: FARGATE
       DeploymentConfiguration:
         MaximumPercent: 200
@@ -117,13 +98,13 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED # to be able to download images from ECR
           SecurityGroups:
-            - !Ref JMSBridgeSecurityGroup
+            - !Ref LoadGeneratorSecurityGroup
           Subnets:
             - {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:PublicSubnet1'}
             - {'Fn::ImportValue': !Sub '${Stage}:JMS-BRIDGE:PublicSubnet2'}
-      TaskDefinition: !Ref JMSBridgeECSTaskDefinition
+      TaskDefinition: !Ref LoadGeneratorECSTaskDefinition
 
 Outputs:
-  JMSBridgeECSClusterRef:
-    Description: The name of the JMS bridge ECS cluster
-    Value: !Ref JMSBridgeECSCluster
+  LoadGeneratorECSClusterRef:
+    Description: The name of the load generator ECS cluster
+    Value: !Ref LoadGeneratorECSCluster

@@ -19,6 +19,10 @@ aws ecr create-repository \
 
 aws ecr create-repository \
     --repository-name amazon-mq-to-websphere-mq-bridge/sample-with-nativemq-mapping
+
+# and our load generator services
+aws ecr create-repository \
+    --repository-name amazon-mq-to-websphere-mq-bridge/load-generator
 ```
 
 ### 2. Compile, package, docerize and upload the samples
@@ -83,10 +87,11 @@ mvn clean deploy
 After a successful run, you should see a console output like this:
 
 ``` bash
-[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.743 s]
-[INFO] sample-with-env-variables .......................... SUCCESS [01:20 min]
-[INFO] sample-with-aws-ssm ................................ SUCCESS [02:31 min]
-[INFO] sample-with-nativemq-mapping 1.0.0-SNAPSHOT ........ SUCCESS [01:06 min]
+[INFO] amazon-mq-to-websphere-mq-bridge 1.0.0-SNAPSHOT .... SUCCESS [  0.752 s]
+[INFO] sample-with-env-variables .......................... SUCCESS [02:20 min]
+[INFO] sample-with-aws-ssm ................................ SUCCESS [02:11 min]
+[INFO] sample-with-nativemq-mapping ....................... SUCCESS [04:24 min]
+[INFO] load-generator 1.0.0-SNAPSHOT ...................... SUCCESS [03:30 min]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
