@@ -6,7 +6,7 @@ public class Bootstrap {
 
     public static void main(String... args) throws Exception {
         Main main = new Main();
-        main.setApplicationContextUri("camel-context-with-native-mq-mapping.xml");
+        main.setApplicationContextUri("camel-context-with-nativemq-mapping.xml");
         main.run(args);
         
     }
