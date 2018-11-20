@@ -39,13 +39,13 @@
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
             <from uri="amazonMQ:queue:DEV.QUEUE.1"/>
-            <to uri="websphereMQ:queue:DEV.QUEUE.1"/>
+            <inOnly uri="websphereMQ:queue:DEV.QUEUE.1?preserveMessageQos=true"/>
         </route>
 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
             <from uri="websphereMQ:queue:DEV.QUEUE.2"/>
-            <to uri="amazonMQ:queue:DEV.QUEUE.2"/>
+            <inOnly uri="amazonMQ:queue:DEV.QUEUE.2?preserveMessageQos=true"/>
         </route>
     </camelContext>
 </beans>

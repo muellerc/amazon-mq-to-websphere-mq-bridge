@@ -67,6 +67,6 @@ Send messages into the IBM® MQ broker queue **DEV.QUEUE.2** and listen on the A
 
 # Completion
 
-Congratulations, you've successfully completed step 3! This is the last step in the workshop.
+Congratulations, you've successfully completed step 4! You can move on to [Step 5: Generate load to see auto-scaling in action](/step-5.md)
 
 [Return the the sample landing page](/README.md)

@@ -14,12 +14,17 @@
 
     <bean id="amazonMQ" class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="connectionFactory">
-            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
-                <property name="brokerURL" value="${amazonMQ.brokerURL}" />
-                <property name="userName" value="${amazonMQ.userName}" />
-                <property name="password">
-                    <bean factory-bean="ssm" factory-method="lookup">
-                        <constructor-arg value="JMS-BRIDGE/AMAZONMQ/PASSWORD" />
+            <bean class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
+                <property name="maxConnections" value="40" />
+                <property name="connectionFactory">
+                    <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                        <property name="brokerURL" value="${amazonMQ.brokerURL}" />
+                        <property name="userName" value="${amazonMQ.userName}" />
+                        <property name="password">
+                            <bean factory-bean="ssm" factory-method="lookup">
+                                <constructor-arg value="JMS-BRIDGE/AMAZONMQ/PASSWORD" />
+                            </bean>
+                        </property>
                     </bean>
                 </property>
             </bean>
@@ -52,13 +57,13 @@
         <route id="amazonMQ-to-websphereMQ">
             <description>Camel Route from amazonMQ to websphereMQ</description>
             <from uri="amazonMQ:queue:DEV.QUEUE.1"/>
-            <to uri="websphereMQ:queue:DEV.QUEUE.1"/>
+            <inOnly uri="websphereMQ:queue:DEV.QUEUE.1?preserveMessageQos=true"/>
         </route>
 
         <route id="websphereMQ-to-amazonMQ">
             <description>Camel Route from websphereMQ to amazonMQ</description>
             <from uri="websphereMQ:queue:DEV.QUEUE.2"/>
-            <to uri="amazonMQ:queue:DEV.QUEUE.2"/>
+            <inOnly uri="amazonMQ:queue:DEV.QUEUE.2?preserveMessageQos=true"/>
         </route>
     </camelContext>
 </beans>
