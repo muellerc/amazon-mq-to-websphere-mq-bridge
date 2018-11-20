@@ -112,7 +112,7 @@
                 </executions>
                 <configuration>
                     <!-- configure your Amazon ECR repository URI: https://console.aws.amazon.com/ecs/home?#/repositories -->
-                    <repository>${aws-account-id}.dkr.ecr.eu-central-1.amazonaws.com/amazon-mq-to-websphere-mq-bridge/${project.artifactId}</repository>
+                    <repository>${aws-account-id}.dkr.ecr.us-west-2.amazonaws.com/amazon-mq-to-websphere-mq-bridge/${project.artifactId}</repository>
                     <tag>latest</tag>
                     <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
                 </configuration>
