@@ -27,6 +27,6 @@ You can use this web console to read messages from the broker and write messages
 
 # Completion
 
-Congratulations, you've successfully completed step 2! You can move on to [Step 3: Set-up the JMS bridge sample services](/labs/lab-3.md)
+Congratulations, you've successfully completed step 2! You can move on to [Step 3: Set-up the JMS bridge sample services](/step-3.md)
 
 [Return the the sample landing page](/README.md)

@@ -89,6 +89,6 @@ You can use this web console to read messages from the broker and write messages
 
 # Completion
 
-Congratulations, you've successfully completed step 1! You can move on to [Step 2: Deploy the Amazon MQ broker](/labs/lab-2.md)
+Congratulations, you've successfully completed step 1! You can move on to [Step 2: Deploy the Amazon MQ broker](/step-2.md)
 
 [Return the the sample landing page](/README.md)
