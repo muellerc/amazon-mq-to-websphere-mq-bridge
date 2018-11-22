@@ -64,7 +64,7 @@ public class Bootstrap {
 
             messageProducer = session.createProducer(session.createQueue(destination));
             messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            messageProducer.setTimeToLive(10*1000);
+            messageProducer.setTimeToLive(5*1000);
         }
 
         public void run() {
@@ -72,11 +72,40 @@ public class Bootstrap {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
 
-                    if (counter.get() % 50 == 0) {
+                    // ~ the first minute
+                    if (counter.get() < 60) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    // ~ the second minutes
+                    }
+                    if (counter.get() < 660) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
+                    // ~ the third minute
+                    } else if (counter.get() < 1860) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                        }
+                    // ~ the forth minute
+                    } else if (counter.get() < 4300) {
+                        try {
+                            Thread.sleep(25);
+                        } catch (InterruptedException e) {
+                        }
+                     // ~ the fifth minute
+                    } else if (counter.get() < 10300) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                        }
+                    // after ~ 6 minutes
+                    } else {
+                        // no delay
                     }
                 } catch (JMSException e) {
                     log.info("Received exception {}", e);
@@ -113,7 +142,7 @@ public class Bootstrap {
 
             messageProducer = session.createProducer(session.createQueue(destination));
             messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            messageProducer.setTimeToLive(10*1000);
+            messageProducer.setTimeToLive(5*1000);
         }
 
         public void run() {
@@ -121,11 +150,40 @@ public class Bootstrap {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
 
-                    if (counter.get() % 50 == 0) {
+                    // ~ the first minute
+                    if (counter.get() < 60) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    // ~ the second minutes
+                    }
+                    if (counter.get() < 660) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
+                    // ~ the third minute
+                    } else if (counter.get() < 1860) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                        }
+                    // ~ the forth minute
+                    } else if (counter.get() < 4300) {
+                        try {
+                            Thread.sleep(25);
+                        } catch (InterruptedException e) {
+                        }
+                     // ~ the fifth minute
+                    } else if (counter.get() < 10300) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                        }
+                    // after ~ 6 minutes
+                    } else {
+                        // no delay
                     }
                 } catch (JMSException e) {
                     log.info("Received exception {}", e);

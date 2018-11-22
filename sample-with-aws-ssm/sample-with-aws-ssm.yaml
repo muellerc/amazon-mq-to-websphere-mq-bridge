@@ -192,7 +192,7 @@ Resources:
       EvaluationPeriods: 3
       Statistic: Average
       TreatMissingData: notBreaching
-      Threshold: 80
+      Threshold: 85
       AlarmDescription: Alarm to add capacity if CPU is high
       Period: 60
       AlarmActions:
