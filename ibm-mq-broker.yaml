@@ -137,16 +137,16 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: ibm-mq-broker-task
-      Cpu: 1024
-      Memory: 2048
+      Cpu: 2048
+      Memory: 4096
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: mqadvanced-server-dev
-          Cpu: 1024
-          Memory: 2048
+          Cpu: 2048
+          Memory: 4096
           Image: !Join [ '', [ !Ref 'AWS::AccountId', '.dkr.ecr.', !Ref 'AWS::Region', '.amazonaws.com/amazon-mq-to-websphere-mq-bridge/mqadvanced-server-dev:latest' ] ]
           PortMappings:
             - ContainerPort: 1414

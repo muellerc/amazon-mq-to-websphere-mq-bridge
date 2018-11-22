@@ -68,7 +68,7 @@ After a successful login, you should see a screen similar to this one:
 
 > To be able to run this step, it's required to have the [AWS CLI](https://aws.amazon.com/cli/) installed!
 
-Now we are ready to run run our IBM® MQ broker as Amazon ECS task in Fargate. Run the first command to launch the AWS CloudFormation template. The second command will wait, until the AWS CloudFormation stack was launched successfuly and is ready to use. Alternatively, you can also open your CloudFormation console and watch the resource creation process. It takes up to 5 minutes to complete:
+Now we are ready to run run our IBM® MQ broker as Amazon ECS task in Fargate. Run the first command to launch the AWS CloudFormation template. The second command will wait, until the AWS CloudFormation stack was launched successfuly and is ready to use. Alternatively, you can also open your CloudFormation console and watch the resource creation process. It takes ~ 3 minutes to complete:
 
 ```bash
 aws cloudformation create-stack \

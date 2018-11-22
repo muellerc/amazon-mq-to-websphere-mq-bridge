@@ -72,14 +72,14 @@ public class Bootstrap {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
 
-                    if (counter.get() % 100 == 0) {
+                    if (counter.get() % 50 == 0) {
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
                     }
                 } catch (JMSException e) {
-                    log.info("Received exception {}", e.getMessage());
+                    log.info("Received exception {}", e);
                 }
             }
         }
@@ -121,14 +121,14 @@ public class Bootstrap {
                 try {
                     messageProducer.send(session.createTextMessage("Message " + counter.incrementAndGet()));
 
-                    if (counter.get() % 100 == 0) {
+                    if (counter.get() % 50 == 0) {
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
                     }
                 } catch (JMSException e) {
-                    log.info("Received exception {}", e.getMessage());
+                    log.info("Received exception {}", e);
                 }
             }
         }

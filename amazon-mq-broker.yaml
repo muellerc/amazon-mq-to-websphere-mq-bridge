@@ -121,9 +121,9 @@ Resources:
     Properties: 
       AutoMinorVersionUpgrade: false
       BrokerName: AmazonMQBroker
-      DeploymentMode: ACTIVE_STANDBY_MULTI_AZ
+      DeploymentMode: SINGLE_INSTANCE  # use ACTIVE_STANDBY_MULTI_AZ for high availability and resiliency
       EngineType: ActiveMQ
-      EngineVersion: 5.15.0
+      EngineVersion: 5.15.6
       HostInstanceType: mq.m5.large
       Logs:
         General: true
@@ -133,7 +133,8 @@ Resources:
         - !Ref AmazonMQSecurityGroup
       SubnetIds:
         - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
+# for single instance, we only need one subnet
+#        - !Ref PublicSubnet2
       Users: 
         - 
           ConsoleAccess: true
@@ -177,6 +178,6 @@ Outputs:
 
   AmazonMQBrokerURLRef:
     Description: The reference to the Amazon MQ broker OpenWire URL.
-    Value: !Sub 'failover:(ssl://${AmazonMQBroker}-1.mq.${AWS::Region}.amazonaws.com:61617,ssl://${AmazonMQBroker}-2.mq.${AWS::Region}.amazonaws.com:61617)'
+    Value: !Sub 'failover:(ssl://${AmazonMQBroker}-1.mq.${AWS::Region}.amazonaws.com:61617)'
     Export:
       Name: !Sub '${Stage}:JMS-BRIDGE:AmazonMQBrokerURL'
